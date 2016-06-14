@@ -1,44 +1,4 @@
 
-##Spring in Action##
-
-###Spring AOP###
-
-Spring‘s AOP configuration elements enable non-invasive declaration of aspects
-
-- <aop:advisor>
-- <aop:after>
-- <aop:after-returning>
-- <aop:after-throwing>
-- <aop:around>
-- <aop:aspect>
-- <aop:aspectj-autoproxy>
-- <aop:before>
-- <aop:config>
-- <aop:declare-parents>
-- <aop:pointcut>
-
-----
-Declaaring before and after adivce
-	
-	<aop:config>
-		<aop:aspect ref="audience">
-			<aop:before
-				pointcut="execution(** concert.Performance.perform(..))"
-				method="silenceCellPhones" />
-			<aop:before
-				pointcut="execution(** concert.Performance.perform(..))"
-				method="takeSeats" />
-			<aop:after-returning
-				pointcut="execution(** concert.Performance.perform(..))
-				method="applause" />
-			<aop:after-throwing
-				pointcut="execution(** concert.Performance.perform(..))"
-				method="demandRefund" />
-		</aop:aspect>
-	</aop:config>
-
-
-
 ###Effective Java中文版 第二版###
 
 ####第8条：覆盖equals时请遵守通用约定####
