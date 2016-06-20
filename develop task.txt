@@ -1,0 +1,58 @@
+Redis连接问题
+19:05:50.130[][redisMessageListenerContainer-159]-[] ERROR o.s.d.redis.listener.RedisMessageListenerContainer [RedisMessageListenerContainer.java:633] - Connection failure occurred. Restarting subscription task after 5000 ms
+19:05:55.133[][redisMessageListenerContainer-160]-[] ERROR o.s.d.redis.listener.RedisMessageListenerContainer [RedisMessageListenerContainer.java:633] - Connection failure occurred. Restarting subscription task after 5000 ms
+19:06:01.008[][pool-24-thread-1]-[] ERROR o.s.s.support.TaskUtils$LoggingErrorHandler [TaskUtils.java:95] - Unexpected error occurred in scheduled task.
+org.springframework.data.redis.RedisConnectionFailureException: Cannot get Jedis connection; nested exception is redis.clients.jedis.exceptions.JedisConnectionException: Could not get a resource from the pool
+	at org.springframework.data.redis.connection.jedis.JedisConnectionFactory.fetchJedisConnector(JedisConnectionFactory.java:140) ~[spring-data-redis-1.4.2.RELEASE.jar:1.4.2.RELEASE]
+	at org.springframework.data.redis.connection.jedis.JedisConnectionFactory.getConnection(JedisConnectionFactory.java:229) ~[spring-data-redis-1.4.2.RELEASE.jar:1.4.2.RELEASE]
+	at org.springframework.data.redis.connection.jedis.JedisConnectionFactory.getConnection(JedisConnectionFactory.java:57) ~[spring-data-redis-1.4.2.RELEASE.jar:1.4.2.RELEASE]
+	at org.springframework.data.redis.core.RedisConnectionUtils.doGetConnection(RedisConnectionUtils.java:128) ~[spring-data-redis-1.4.2.RELEASE.jar:1.4.2.RELEASE]
+	at org.springframework.data.redis.core.RedisConnectionUtils.getConnection(RedisConnectionUtils.java:91) ~[spring-data-redis-1.4.2.RELEASE.jar:1.4.2.RELEASE]
+	at org.springframework.data.redis.core.RedisConnectionUtils.getConnection(RedisConnectionUtils.java:78) ~[spring-data-redis-1.4.2.RELEASE.jar:1.4.2.RELEASE]
+	at org.springframework.data.redis.core.RedisTemplate.execute(RedisTemplate.java:177) ~[spring-data-redis-1.4.2.RELEASE.jar:1.4.2.RELEASE]
+	at org.springframework.data.redis.core.RedisTemplate.execute(RedisTemplate.java:152) ~[spring-data-redis-1.4.2.RELEASE.jar:1.4.2.RELEASE]
+	at org.springframework.data.redis.core.AbstractOperations.execute(AbstractOperations.java:85) ~[spring-data-redis-1.4.2.RELEASE.jar:1.4.2.RELEASE]
+	at org.springframework.data.redis.core.DefaultSetOperations.members(DefaultSetOperations.java:127) ~[spring-data-redis-1.4.2.RELEASE.jar:1.4.2.RELEASE]
+	at org.springframework.data.redis.core.DefaultBoundSetOperations.members(DefaultBoundSetOperations.java:91) ~[spring-data-redis-1.4.2.RELEASE.jar:1.4.2.RELEASE]
+	at org.springframework.session.data.redis.RedisSessionExpirationPolicy.cleanExpiredSessions(RedisSessionExpirationPolicy.java:116) ~[spring-session-1.1.1.RELEASE.jar:na]
+	at org.springframework.session.data.redis.RedisOperationsSessionRepository.cleanupExpiredSessions(RedisOperationsSessionRepository.java:388) ~[spring-session-1.1.1.RELEASE.jar:na]
+	at sun.reflect.GeneratedMethodAccessor82.invoke(Unknown Source) ~[na:na]
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[na:1.7.0_80]
+	at java.lang.reflect.Method.invoke(Method.java:606) ~[na:1.7.0_80]
+	at org.springframework.scheduling.support.ScheduledMethodRunnable.run(ScheduledMethodRunnable.java:64) ~[spring-context-3.1.2.RELEASE.jar:3.1.2.RELEASE]
+	at org.springframework.scheduling.support.DelegatingErrorHandlingRunnable.run(DelegatingErrorHandlingRunnable.java:53) ~[spring-context-3.1.2.RELEASE.jar:3.1.2.RELEASE]
+	at org.springframework.scheduling.concurrent.ReschedulingRunnable.run(ReschedulingRunnable.java:81) [spring-context-3.1.2.RELEASE.jar:3.1.2.RELEASE]
+	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:471) [na:1.7.0_80]
+	at java.util.concurrent.FutureTask.run(FutureTask.java:262) [na:1.7.0_80]
+	at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.access$201(ScheduledThreadPoolExecutor.java:178) [na:1.7.0_80]
+	at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:292) [na:1.7.0_80]
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145) [na:1.7.0_80]
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615) [na:1.7.0_80]
+	at java.lang.Thread.run(Thread.java:745) [na:1.7.0_80]
+Caused by: redis.clients.jedis.exceptions.JedisConnectionException: Could not get a resource from the pool
+	at redis.clients.util.Pool.getResource(Pool.java:50) ~[jedis-2.6.2.jar:na]
+	at redis.clients.jedis.JedisPool.getResource(JedisPool.java:88) ~[jedis-2.6.2.jar:na]
+	at redis.clients.jedis.JedisPool.getResource(JedisPool.java:12) ~[jedis-2.6.2.jar:na]
+	at org.springframework.data.redis.connection.jedis.JedisConnectionFactory.fetchJedisConnector(JedisConnectionFactory.java:133) ~[spring-data-redis-1.4.2.RELEASE.jar:1.4.2.RELEASE]
+	... 25 common frames omitted
+Caused by: redis.clients.jedis.exceptions.JedisConnectionException: java.net.ConnectException: Connection refused: connect
+	at redis.clients.jedis.Connection.connect(Connection.java:148) ~[jedis-2.6.2.jar:na]
+	at redis.clients.jedis.BinaryClient.connect(BinaryClient.java:75) ~[jedis-2.6.2.jar:na]
+	at redis.clients.jedis.BinaryJedis.connect(BinaryJedis.java:1572) ~[jedis-2.6.2.jar:na]
+	at redis.clients.jedis.JedisFactory.makeObject(JedisFactory.java:69) ~[jedis-2.6.2.jar:na]
+	at org.apache.commons.pool2.impl.GenericObjectPool.create(GenericObjectPool.java:868) ~[commons-pool2-2.4.2.jar:2.4.2]
+	at org.apache.commons.pool2.impl.GenericObjectPool.borrowObject(GenericObjectPool.java:435) ~[commons-pool2-2.4.2.jar:2.4.2]
+	at org.apache.commons.pool2.impl.GenericObjectPool.borrowObject(GenericObjectPool.java:363) ~[commons-pool2-2.4.2.jar:2.4.2]
+	at redis.clients.util.Pool.getResource(Pool.java:48) ~[jedis-2.6.2.jar:na]
+	... 28 common frames omitted
+Caused by: java.net.ConnectException: Connection refused: connect
+	at java.net.DualStackPlainSocketImpl.waitForConnect(Native Method) ~[na:1.7.0_80]
+	at java.net.DualStackPlainSocketImpl.socketConnect(DualStackPlainSocketImpl.java:85) ~[na:1.7.0_80]
+	at java.net.AbstractPlainSocketImpl.doConnect(AbstractPlainSocketImpl.java:339) ~[na:1.7.0_80]
+	at java.net.AbstractPlainSocketImpl.connectToAddress(AbstractPlainSocketImpl.java:200) ~[na:1.7.0_80]
+	at java.net.AbstractPlainSocketImpl.connect(AbstractPlainSocketImpl.java:182) ~[na:1.7.0_80]
+	at java.net.PlainSocketImpl.connect(PlainSocketImpl.java:172) ~[na:1.7.0_80]
+	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:392) ~[na:1.7.0_80]
+	at java.net.Socket.connect(Socket.java:579) ~[na:1.7.0_80]
+	at redis.clients.jedis.Connection.connect(Connection.java:142) ~[jedis-2.6.2.jar:na]
+	... 35 common frames omitted
