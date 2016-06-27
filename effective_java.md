@@ -320,10 +320,11 @@ Java没有提供这种函数指针，但是可以通过对象引用来实现同�
 
 #### 第30条 用enum代替int常量
 
+>枚举类型（enum type）是指有一组固定的常量组成合法值的类型。
 
+一个简单的枚举类如下所示：
 
+	public enum Apple { FUJI, PIPPIN, GRANNY_SMITH}
 
-
-
-
+**enum本质上是一个Java类，虽然在一些方面受到限制。**
 
