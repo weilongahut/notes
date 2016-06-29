@@ -86,4 +86,11 @@ In a Servlet 3.0 environment, the container looks for any classes in the classpa
 
 	}
 
+`AbstractAnnotationConfigDispatchServletInitializer` creates both a `DispatcherServlet` and a `ContextLoaderListener`
 
+
+#### Enable Spring MVC ####
+
+<mvc:annotation-driven> element enable annotation-driven Spring　MVC.
+
+@EnableWebMvc

@@ -326,5 +326,139 @@ Java没有提供这种函数指针，但是可以通过对象引用来实现同�
 
 	public enum Apple { FUJI, PIPPIN, GRANNY_SMITH}
 
-**enum本质上是一个Java类，虽然在一些方面受到限制。**
+有一种更好的方法可以将不同的行为与没每个枚举常量关联起来：**在枚举类型中声明一个抽象方法，并在特定于常量的类主体（constant-specific class body）中，**用具体的方法覆盖每个常量的抽象方法。这种方法被称为**特定于常量的方法实现（constant-specific method implementation）**
 
+与int常量相比，枚举类型的优势是不言而喻的。枚举要易读得多，也更加安全，功能更加强大。许多枚举都不需要显式的构造器或者成员，但许多其他枚举则受益于“每个常量与属性的关联”以及“提供行为受这个属性影响的方法”。只有极少数的枚举收益于将多种行为与单个方法关联。在这种相对少见的情况下，特定于常量的方法要优于启用自有值得枚举。如果多个枚举常量同时共享相同的行为，则考虑**策略枚举**
+
+
+#### 第31条 用实例域代替序数 ####
+
+大部分枚举都是和int值相关联的，所有的枚举都有一个ordinal方法，它返回每个枚举常量在类型中的数字位置。
+
+	//Abuse of ordinal to derive an associated value
+	public enum Ensemble {
+		SOLO, DUET, TRIO, QUARTET, QUINTET,
+		SEXTET，SEPTET，OCTET, NONET, DECTET;
+
+		public int numberOfMusicians(){
+			return ordinal() + 1;
+		} 
+	}
+
+**永远不要根据枚举的序数导出与它关联的值，而是要将它保存在一个实例域中**
+
+	public enum Ensemble {
+		SOLO(1), DUET(2), TRIO(3), QUARTET(4), QUINTET(5),
+		SEXTET(6)，SEPTET(7)，OCTET(8), NONET(9), DECTET(10);
+	
+		private final int numberOfMusicians;
+		Ensemble(int size) {
+			this.numberOfMusicians = size;
+		}
+		public int numberOfMusicians(){
+			return numberOfMusicians;
+		}
+	
+	}
+
+**除非是要编写基于枚举的通用数据结构，否则最好完全避免使用ordinal（）方法**
+
+
+#### 第32条 用EnumSet代替位域 ####
+
+位域：用OR位运算符将常量合并到一个集合中，这个集合称作位域。
+
+
+java.util.EnumSet类有效地表示从单个枚举类型中提取的多个值的多个集合。这个类实现Set接口，提供了丰富的功能、类型安全性，以及可以从任何其他Set实现中得到的互用性，但是在内部具体的实现上，每个Enumset内部都表示为位矢量。
+
+**如果枚举类型要用在集合（Set）中，就尽量不要用位域来表示它。**EnumSet集位域的简洁和性能优势，但是有一个严重的问题，EnumSet直至1.6都不能创建不可变的EnumSet。如果需要创建不可变的EnumSet，可以考虑将Collections.unmodifiableSet将EnumSet封装起来，然而这样简洁性和性能会受影响。
+
+#### 第33条 用EnumMap代替序数索引 ####
+使用EnumMap进行索引
+
+	
+	//using a nested EnumMap to associate data with enum pairs
+	public enum Phase {
+		SOLID, LIQUID, GAS;
+
+		public enmu Transition {
+			MELT(SOLID, LIQUID), FREEZE(LIQUID, SOLID),
+			BIOL(LIQUID, GAS),	 CONDENSE(GAS, LIQUID),
+			SUBLIME(SOLID, GAS), DEPOSIT(GAS, SOLID);
+
+			private final Phase src;
+			private final Phase dst;
+
+			Transition(Phase src, Phase dst){
+				this.src = src;
+				this.dst = dst;
+			}
+
+			//Initialize the phase transition map
+			private static final Map<Phase, Map<Phase, Transition> m = new EnumMap<Phase, Map<Phase, Transition>>(Phase.class);
+			static {
+				for(Phase p : Phase.values())
+					m.put(p, new EnumMap<Phase, Transition>(Phase.class);
+				for(Transition trans : Transition.values())
+					m.get(trans.src).put(trans.dst, trans);
+
+			}
+
+			public static Transition from(Phase src, Phase dst) {
+				return m.get(src).get(dst);
+			}
+
+		}
+
+	}
+
+EnumMap的Map被实现成了数组的数组，因此在提升了清楚性、安全性和易维护性的同时，在空间或者时间上还几乎不用任何开销。
+
+**最好不要用序数来索引数组，而要使用EnumMap，如果你所表示的这种关系是多维的，就用EnumMap<..., EnumMap<...>>**
+
+
+#### 第34条 用接口模拟可伸缩的枚举 ####
+
+可伸缩的枚举类，让一个枚举类型去扩展另一个枚举类型并不是一个好主意，扩展类型的元素为基本类型的实例，基本类型的实例却不是扩展类型的元素，这样很混乱。**通过接口来模拟这种伸缩性，则不会有这种问题。**
+
+此外Enum是不可变的，无法编写可扩展的枚举类型，但是可以通过编写接口以及实现该接口的基础枚举类型，对它进行模拟。
+
+#### 第35条 注解优先于命名模式 ####
+
+在Java 1.5之前，一般使用**命名模式（name pattern）**表明有些程序元素需要通过某种工具或者框架进行特殊处理。这种方法可行，但是有很多缺点：
+	
+- 文字拼写错误会导致失败，而且没有任何提示
+- 无法确保它们只用于相应的元素上
+- 没有提供将参数值与程序元素关联起来的好方法
+
+@Test注解：
+	
+	//Marker annotation type declaration
+	import java.lang.annotation.*;
+	
+	/**
+	 *Indicates that the annotation method is a test
+	 *method. Use only on parameterless static methods
+	**/
+	@Retention(RententionPolicy.RUNTIME)
+	@Target(ElementType.METHOD)
+	public @interface Test{
+
+	}
+
+注解声明中的注解称作元注解（meta-annotation）, `@Retention（RetentionPolicy.RUNTIME）`表明Test注解应该在运行时保留，`@Target(ElementType.METHOD)`表明Test注解只能用于方法，此外Test注解是一个marker annoation，没有其他参数，只是标注被注解的元素。
+
+#### 第36条 坚持使用Override注解 ####
+
+在子类中，可能会有想要覆盖超类方法但是结果却重载了的情况，比如Object.euqals（Object o），一般在子类中则会写成equals（SubClass o），这样就不能覆盖Object中的方法。
+
+在想要覆盖超类声明的每个方法声明中使用Override注解，这样在编译器就可以防止大量的错误，但有一个列外，在具体的泪中，不必标注你确信覆盖了抽象方法声明的方法。
+
+#### 第37条 用标记接口定义类型 ####
+标记接口是没有包含任何方法声明的接口，而只是指明（或者“标明”）一个雷实现了具有某种属性的接口，如Serializable接口。
+
+相比于标记注解，标记接口定义的类型是由被标记类的实例实现的，标记注解则没有定义这样的类型。此外，标记注解的错误往往需要在运行时才能捕捉，标记接口则在编译期就可以捕捉。
+
+标记接口和标记注解各有用处，如果想定义一个任何性方法都不会与之关联的类型，标记接口就是最好的选择、如果想要标记程序元素而非类和接口，考虑未来可能要给标记添加更多的信息或者标记要适合于已经广泛使用了注解类型的框架，那么标记注解就是正确的选择。**如果你发现你正在编写的目标为ElementType.TYPE的标记注解类型，就要花点时间考虑清楚，它是否真的应该为注解类型，想想标记接口是否会更加合适。**
+
+### 第7章 方法 ###
