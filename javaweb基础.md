@@ -82,7 +82,7 @@ Servlet容器处理客户请求的过程
 - 1.Servlet引擎检查是否已经加载并创建了该Servlet实例对象，如果是直接到4；
 - 2.加载并创建该servlet的对象，调用该Servlet的constructor；
 - 3.调用servlet对象的init方法；
-- 4.创建爱你一个用于封装请求的ServletRequest对象和一个代表响应消息的ServletResponse对象，然后调用Servlet的service方法并将请求和相应对象作为参数传递进去；
+- 4.创建一个用于封装请求的ServletRequest对象和一个代表响应消息的ServletResponse对象，然后调用Servlet的service方法并将请求和相应对象作为参数传递进去；
 - 5.Web应用被停止或者重新启动之前，Servlet引擎将卸载Servlet并在卸载前调用destroy方法
 
 ServletConfig对象：
@@ -157,11 +157,115 @@ HTTP的请求头：
 										
 GET和POST的主要区别在于GET请求的参数会直接附在URL后面，POST请求则会封装在formData或者payload中
 
+---
+
+## JSP概述
+
+Java Server Pages，为了简化Servlet进行的一种扩展，在HTML页面中直接写Java代码，本质上JSP也是一个servlet，会被翻译成java文件并编译成Class文件。
+hello.jsp会被编译成如下代码：
+	
+	//omitted...
+	public final class hello_jsp extends org.apache.jasper.runtime.HttpJspBase implements org.apache.jasper.runtime.JspSourceDependent{
+	//omitted
+	}
+
+从上面的代码可以看出JSP默认继承了HttpJspBase并扩展JspSourceDependent接口
+
+	<%= 在这里写Java代码%>
+	
+#### JSP的9个隐含对象：
+
+**Response，Resquest， pageContext， session
+, application, config, out, page, exception**
+
+已经在JSP中声明，直接可以使用
+
+- request， HttpServletRequest；
+- response, HttpServletResponse;
+- pageContext, PageContext对象，可以获取到当前页面的几乎所有信息，包含其他8个隐含对象，在设计自定义标签时会用到这个对象；
+- session, 浏览器和服务器的一次会话，HttpSession对象，这个很重要
+- application，代表当前WEB应用，是ServletContext对象；
+- config， 当前JSP对应的Servlet的ServletConfig对象,如果需要访问JSP的初始化参数，需要通过映射的地址才可以
+		
+		//映射jsp文件的方式
+		<servlet>
+			<servlet-name>hellojsp</servlet-name>
+			<jsp-file>/hello.jsp</jsp-file>
+			<init-param>
+				<param-name> test</param-name>
+				<param-value> testValue</param-value>
+			</init-param>
+		</servlet>
+		
+		<servlet-mapping>
+			<servlet-name>hellojsp</servlet-name>
+			<url-pattern>/hellojsp</url-pattern>
+		</	servlet-mapping>	
+- out，JSPWriter，out.print（）方法直接将字符打印到浏览器上，注意此处的println()方法不会换行，需要在jsp内插入<br>换行
+- page, 当前JSP对象的servlet对象的引用，为Object对象
+- exception，异常对象，Exception,在error页面上使用
+	<%@ page isErrorPage=“true” %>
+
+ 
+#### JSP的基本语法
 
 
+- JSP模板元素：JSP页面中的静态HTML代码
+- JSP表达式，
+	
+		<!-- JSP表达式 -->
+		<%= date %>
+
+- 脚本片段：在HTML中嵌入的Java代码，<% %>
+- JSP声明：<%! %>，用于声明JSP对象的方法，JSP代码默认会在service（）方法体中，是用声明则可以声明独立的方法
+- JSP注解：
+	- <%-- JSP注释 --%>
+	- <! -- HTML注释 -->
+
+#### 域对象属性操作
+
+request，pageContext，session， application属性相关的方法
+
+- Object getAttribute(String name): 获取指定的属性
+- Enumeration getAttributeNames(): 获取所有的属性的名字组成的Enumeration对象
+- void removeAttribute(String name):移除指定的属性
+- void setAttribute(String name, Object o): 设置属性
 
 
-										
+request(HttpRequest)对象的属性作用范围仅限一次请求；
+pageContext(PageContext)对象的属性作用范围在当前页面；
+Session（HttpSession）对象属性的所用范围在一次会话；
+application（ServletContext）对象属性作用范围在整个WEB应用中。
+
+#### 请求重定向和转发
+
+RequestDispatcher是用于服务器端请求转发的接口，其实例对象是由Servlet引擎创建，用于包装一个要被其他资源调用的资源（例如，Servlet、HTML文件、JSP文件等）并可以通过其中的方法将客户端的请求转发给所包装的资源。
+
+RequestDispatcher有两个方法，分别是forward和include。
+
+	//获取RequestDispatcher对象， path为要跳转的路径
+	RequestDispatcher reqeustDispatcher = request.getResquestDispatcher("/" + path);
+	//执行转发
+	requestDispatcher.forward(request, response);
+	
+重定向：
+response.sendRedirect(locaiton);		
+
+**重定向和转发的区别：**
+
+- foward方法是服务器方法，浏览器不会感知到这种变化，地址栏路径不会发生变化浏览器只一次请求，转发在服务端执行，foward是RequestDispatcher的方法，reqeust.getRequestDisptcher().forwar(path);请求转发只能转发到当前应用的资源，forward的路径的“/”表示当前WEB应用的根目录
+- sendRedirect重新定向是服务器返回给浏览器的指示，浏览器再发一次到新路径的请求, sendRedirect是HttpServletResponse的方法，response.sendRedirect(location)，重定向是浏览器端的行为，所以可以转发到任意地址，redirect的location中的“/”是WEB站点的根目录
+
+### JSP指令
+
+JSP指令（direction）是为JSP引擎设计的，它们并不直接产生任何可见的输出，而是**告诉引擎如何处理JSP页面中的其余部分**
+
+JSP指令的基本语法：
+	
+	<%@ page contentType="text/html;charset=utf8" %>
+JSP2.0中定义了page、include和taglib三种指令
+
+####  page指令
 
 
 
