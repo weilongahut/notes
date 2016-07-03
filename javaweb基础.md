@@ -258,7 +258,7 @@ response.sendRedirect(locaiton);
 
 ### JSP指令
 
-JSP指令（direction）是为JSP引擎设计的，它们并不直接产生任何可见的输出，而是**告诉引擎如何处理JSP页面中的其余部分**
+JSP指令（direction）是为JSP引擎设计的，它们并不直接产生任何可见的输出，而是**告诉引擎如何处理JSP页面中的相关部分**
 
 JSP指令的基本语法：
 	
@@ -266,11 +266,108 @@ JSP指令的基本语法：
 JSP2.0中定义了page、include和taglib三种指令
 
 ####  page指令
+	
+page指令用于定义JSP页面的各种属性，无论page指令出现在JSP页面中的什么地方，它作用的都是整个页面，为了保持程序的可读性和遵循良好的编程习惯，page指令最好是放在整个page页面的起始位置
+
+用法：
+
+	<%@ page
+		[language="java"] 
+		[contentType=""]
+		[extends="package.class"]
+		[import="{package.class | package}, ..."]
+		[session="true | false"]
+		[error="error.jsp"]
+		[isErrorPage="true"]
+		[isELIgnored="true"]
+	%>
+	
+	<%@ page language="java" contentType="text/html;charset=utf-8" pageEncoding="utf-8"%>
+
+
+#### include指令
+include指令用于通知JSP引擎在翻译当前JSP页面时将其他文件中的内容合并到当前的JSP页面转换成的Servlet源文件中，这种在源文件级别进行引入的方式成为**静态引入**
+
+用法：
+	
+	<%@ include file="relativeURL"%>
+	
+	**注意：这里的URL是相对路径 **
+	
+细节：
+
+- 被引入的文件必须遵循JSP语法，其中的内容可以包含静态HTML/JSP脚本元素、JSP指令和JSP行为元素等普通JSP页面所具有的一切内容
+- 被引入文件会被JSP引擎当做JSP页面来处理，不管是各种文件扩展名，JSP规范建议使用.jspf（JSP fragment）来作为静态引入文件的扩展名
+- page指令的相关属性除了import和pageEncoding之外，其他属性不能有两个不同值
+
+#### JSP标签
+JSP提供了一种称之为Action的元素，在JSP页面中使用Action元素可以完成各种通用的JSP页面功能，也可以实现一些处理复杂业务逻辑的专用功能；
+Action元素采用XML元素的语法格式，即每个Action元素在JSP页面中都以XML标签的形式出现。JSP规范中定义了一些标准的Action元素，这些元素的标签名都以jsp为前缀，并且全部采用小写，如<jsp:include>、<jsp:forward>
+
+**<jsp:include>标签和<%@ include file="URL"%>**的区别：
+include指令是源码级引入，在编译期引入文件，两部分会在一个Servlet文件中，include标签是运行期引入，会分别编译成两个Servlet文件并通过方法调用的方式实现引入
+
+#### 中文乱码问题
+
+- 1 设置page属性
+
+	<!-- charset和pageEncoding的属性值要一致，一般为utf-8 -->
+	<%@ page contentType="text/html;charset=utf-8" pageEncoding="utf-8"%>
+
+- 2 request.setCharacterEncoding("utf-8")
+
+- 3 先解码再编码
+
+		String val = request.getParameter("userName");
+		String userName = new String(val.getBytes("iso-8859-1"), "utf-8");
+		out.print(userName);
+		
+- 4 URI请求编码
+
+设置Tomcat的useBodyEncodingForURI属性，为Connector节点添加useBodyEncodingForURI属性为true
+
+### MVC设计模式
+
+
+**组件开发**
+
+JavaEE常见组件：commons-beanutils、commons-dbcp、commons-dbutils、commons-fileupload、commons-logging、hibernate-release、jbmp
+
+
+Model-View-Controller
+
+- Model，是应用程序的主体部分，表示业务数据和业务逻辑
+- View，是展示给用户与之交互的页面，
+- Controller，接收用户输入，并调用模型和视图完成处理任务
 
 
 
+### Cookie & Session 会话跟踪
+
+HTTP协议是一个无状态的协议，WEB服务器本身不能识别出哪些请求是同一个浏览器发出的，即使HTTP1.1的长连接，在用户有一段时间没有发起请求之后连接也会被关闭，Web服务器需要一种机制来识别用户浏览器的请求，维护会话状态。
+
+在Servlet规范中有两种机制来实现会话跟踪：
+
+- Cookie
+- Session
 
 
+
+#### Cookie
+cookie机制是在客户端保持HTTP状态信息的方案，Cookie是在浏览器访问WEB服务器资源时，由WEB服务器在HTTP相应消息头中附带传送给浏览器的一个小文本文件。一旦WEB浏览器保存了某个Cookie，那么它以后每次访问该WEB服务器时都会在HTTP请求头中将这个Cookie回传给WEB服务器。
+
+WEB服务器在通过HTTP相应消息中增加**Set-Cookie响应头**字段来讲Cookie信息发送给浏览器，浏览器则通过在HTTP请求消息中增加Cookie请求头字段将Cookie回传给WEB服务器
+
+一个Cookie只能标识一种信息，它至少包含一个标识该信息的名称（NAME）和设置值（VALUE）
+
+一般浏览器允许存放300个左右Cookie，每个站点最多20个，每个Cookie最大4K
+
+	Cookie cookie = new Cookie(name, value);
+	request.addCookie(cookie);
+
+
+**Cookie的path（作用路径）问题**
+JSP中，cookie的作用范围在当前目录及其子目录中
 
 
 
