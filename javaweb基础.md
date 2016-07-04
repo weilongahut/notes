@@ -369,6 +369,34 @@ WEB服务器在通过HTTP相应消息中增加**Set-Cookie响应头**字段来�
 **Cookie的path（作用路径）问题**
 JSP中，cookie的作用范围在当前目录及其子目录中
 
+#### Session
+
+一类在客户端与服务端之间保持状态的解决方案，有时候Session也用来指这种解决方案的存储结构
+
+服务器采用类似Hash的结构来保存信息，当程序需要为某个客户端的请求创建一个Session时，服务器首先检查这个客户端的请求里是否友尽更包含了一个session标识（SessionId），如没有则为该客户端新建一个Session，客户端会保存这个Session
+
+保存session的方式包括：
+
+- 采用cookie，在交互过程中，浏览器可以自动地按照规则把这个标识发送给服务器；
+- URL重写，每次请求时把sessionId附加在URL路径的后面，或者作为查询字符串加在URL后面，response.encodeURL("path")方法可以将session添加到URL路径后，以分号分隔，encodeRedirectURL()方法也可以实现URL重写
+
+HttpSession的生命周期：
+
+1. 创建
+	
+	首次访问JSP或者Servlet时服务器会为客户端生成一个session，如果jsp设置了禁用session（<%@ page session="false"%>）则不会;
+	
+	<%@ page session="false"%>表示当前页面不支持session内置对象，但是可以通过reques.getSession（）等方式使用Session
+
+2. 销毁
+
+	直接调用HttpSession的invalidate方法，使该session失效
+	
+	服务器卸载当前WEB应用时，session自动失效
+	
+	session超过生存期，自动失效，查询sessi的最大存活期session.getMaxInactiveInterval()
+	
+
 
 
 	
