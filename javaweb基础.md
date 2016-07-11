@@ -396,8 +396,68 @@ HttpSession的生命周期：
 	
 	session超过生存期，自动失效，查询sessi的最大存活期session.getMaxInactiveInterval()
 	
+#### 绝对路径和相对路径
+
+- 建议在开发时使用绝对路径，因为相对路径有时候可能会有一些问题，但是绝对路径在移植性上有问题！
+	在servlet处理之后，转发到JSP页面时，浏览器上的地址是Servlet的地址，如果此时JSP上的超链接是相对JSP文件的路径，那么就会有问题
+
+- 什么是绝对路径？
+
+	相对于当前WEB应用的根目录的路径，即任何路径都要带上contextPath,request.getContextPath()
+
+	- 1.相对于当前WEB应用的根目录的路径，可以视为绝对路径。即http://localhost:8080/contextPath/...。
+	
+- JavaWEB开发中的/代表什么？
+
+ 	1、当前WEB应用的根路径：http://localhost:8080/contextPath/
 
 
+		\>  请求转发时：request.getRequestDispatcher("/path/test.jsp").forward(request, response);
+			
+		\> web.xml文件中的Servlet访问路径
+		\> 各种定制标签中的/
+		
+	2、WEB站点的根路径：http://localhost:8080/
+	
+		\>超链接：
+		\>form的action路径
+		\>请求重定向response.sendRedirect("/a.jsp");
+		
+		
+#### 使用Session防止表单重复提交
 
+一种简单的防止表单重复提交的思路是：在表单中设置一个标记，在Servlet处理时先检查这个标记，如果标记存在且值一样，则为重复提交请求。方法：
+
+- 可以使用隐藏域，值为一个与时间有关的随机值，在Servlet中检查请求的时间，根据请求时间判断是否重复提交，这样做是因为Servlet无法清除隐藏域的值，无法更新其状态
+- 使用session，可以在sessio里设置请求标志位，Servlet可以取该值，并且可以更新其值。在请求session中设置一个随机值，并在页面中将该值保存在隐藏域中，提交请求，Servlet从Session中取出该值，并将其和隐藏域中的值进行对比，如果一致，则清除session中标志，然后处理该请求，如果不一致，则为重复提交
+
+#### 使用Session实现简单验证码
+
+和防止表单重复提交的原理类似：
+
+1. 在表单页生成一个验证码，并且将验证码的值设置到Session中
+2. 在Servlet处理该请求时取Session中的验证码值和表单提交的值进行比较，如果一致则成功，否则提示验证码错误
+
+	
+### 在JSP中使用JavaBean（Deprecated）
+- <jsp:useBean>
+	
+	创建和查找JavaBean实例
+- <jsp:setProperty>
+
+	设置JavaBean的属性值
+
+- <jsp:getProperty>
+
+	读取JavaBean属性
+
+
+### EL（Expression Language）表达式
+
+EL原本是JSTL1.0为了方便存储数据所自定义的语言。到了JSP2.0之后，EL已经被正式纳入成为标准规范之一。因此，只要是支持Servlet2.4/JSP 2.0的Container，都可以在JSP网页中直接使用EL表达式。
+
+#### EL语法
+形如${}：
+	`${sessionScope.user.name}`
 	
 	 
