@@ -460,4 +460,96 @@ EL原本是JSTL1.0为了方便存储数据所自定义的语言。到了JSP2.0�
 形如${}：
 	`${sessionScope.user.name}`
 	
+	${sessionScope.customer["age"]} 
+	${sessionScope.customer.age}
+	
+#### EL变量
+
+EL存取变量数据的方法很简单，例如：${userName}，它的意思是取出某一范围中名称为username的变量。
+
+**不指明范围时，默认会从最小的范围查找，page->Request->Session->Application**, 如果都没找到就返回null
+
+#### EL隐含对象
+
+PageContext  javax.servlet.ServletContext  表示此JSP的PageEncodingContext
+PageScope	java.util.Map	取得Page范围的属性名称所对应的值
+RequestScope	java.util.Map	取得Request范围的属性名称所对应的值
+SessionScope	java.util.Map	取得Session范围的属性名称所对应的值
+applicationScope	java.util.Map	取得Application范围的属性名称多对应的值
+param	java.util.Map	如果ServletRequest.getParameter(String name), 回传String类型的值
+paramValues	java.util.Map	parameter name
+header	java.util.Map	maps request header to a single String header value
+headerValues	java.util.Map	Maps a request header name to an array of String values of that header
+cookie	java.util.Map	
+initParam	java.util.Map	Maps a context initialization parameter name to a String parameter
+
+
+## 自标签
+
+- 自定义标签可以降低jsp开发的复杂度和维护量，从html的角度来说，可以使html不用去过多的关注那些比较复杂的业务逻辑
+- 利用自定义标签，可以使软件开发人员和页面设计人员合理分工
+- 将具有共同特征的tag库应用于不同的项目中，体现了**复用**的思想
+
+
+导入标签
+
+	<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+	
+使用标签
+
+	<c:foreach items="${requestScope.customers}" var="customer">
+		-- ${customer.id}, ${customer.name} <br>
+	</c:foreach>
+	
+
+### 自定义标签
+
+用户定义的一种自定义的jsp标记。当一个含有自定义标签的jsp页面被jsp引擎编译成servlet时，tag标签被转换成一个被称为**标签处理类**的对象。于是，当jsp页面被jsp引擎转化为servlet后，实际上tag标签被jsp引擎转化为了对tag处理类的操作
+
+#### 标签库API
+	
+	javax.servlet.jsp.tagext;
+	
+	SimpleTag
+	
+1. Maytag.tld定义文件
+	
+	标签定义文件头等
+		
+		 <taglib>
+		 	<tag>
+		 	<!-- 标签定义 -->
+		 	<name> 标签名 </name>
+		 	<tag-class> 标签处理类 </tag-class>
+		 	<body-content> 标签体 </body-content>
+		 	<!-- 定义属性 -->
+		 	<attribute>
+		 		<name>属性名</name>
+		 		<required>是否必须</required>
+		 		<rtexprvalue>运行时表达式值 runtime expression value</rtexprvalue>
+		 	</attribute>
+		 	</tag>
+		 </taglib>
+	
+2. 标签类，覆盖的几个方法
+
+- setJspContext JspContext是PageContext的一个子类
+- setParent 父标签类
+- setxxx 属性值
+- setJspBody 标签的body
+- doTag 标签解析方法，要做的处理在这个方法里实现
+
+
+
+	
+
+
+	
+		
+
+
+
+	
+	
+	
 	 
